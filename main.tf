@@ -257,6 +257,15 @@ resource "aws_dms_endpoint" "this" {
     }
   }
 
+  # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.MySQL.html
+  dynamic "mysql_settings" {
+    for_each = length(lookup(each.value, "mysql_settings", [])) > 0 ? [each.value.mysql_settings] : []
+    content {
+      authentication_method   = try(mysql_settings.value.authentication_method, null)
+      service_access_role_arn = try(mysql_settings.value.service_access_role_arn, null)
+    }
+  }
+
   password                = lookup(each.value, "password", null)
   pause_replication_tasks = try(each.value.pause_replication_tasks, null)
   port                    = try(each.value.port, null)
@@ -281,6 +290,8 @@ resource "aws_dms_endpoint" "this" {
       max_file_size                = try(postgres_settings.value.max_file_size, null)
       plugin_name                  = try(postgres_settings.value.plugin_name, null)
       slot_name                    = try(postgres_settings.value.slot_name, null)
+      authentication_method        = try(postgres_settings.value.authentication_method, null)
+      service_access_role_arn      = try(postgres_settings.value.service_access_role_arn, null)
     }
   }
 
